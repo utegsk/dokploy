@@ -22,6 +22,7 @@ import {
 	paths,
 	prepareEnvironmentVariables,
 	processLogs,
+	REMOTE_MONITORING_ENABLED,
 	readConfig,
 	readConfigInPath,
 	readDirectory,
@@ -873,6 +874,9 @@ export const settingsRouter = createTRPCRouter({
 		}),
 	isCloud: publicProcedure.query(async () => {
 		return IS_CLOUD;
+	}),
+	isRemoteMonitoringEnabled: protectedProcedure.query(() => {
+		return REMOTE_MONITORING_ENABLED;
 	}),
 	isUserSubscribed: protectedProcedure.query(async ({ ctx }) => {
 		const haveServers = await db.query.server.findMany({

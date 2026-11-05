@@ -244,6 +244,8 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 	const utils = api.useUtils();
 	const [visible, setVisible] = useState(false);
 	const { data: isCloud } = api.settings.isCloud.useQuery();
+	const { data: isRemoteMonitoringEnabled } =
+		api.settings.isRemoteMonitoringEnabled.useQuery();
 
 	const { data: notification } = api.notification.one.useQuery(
 		{
@@ -1971,7 +1973,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									/>
 								)}
 
-								{isCloud && (
+								{(isCloud || isRemoteMonitoringEnabled) && (
 									<FormField
 										control={form.control}
 										name="serverThreshold"

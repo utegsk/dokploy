@@ -42,6 +42,8 @@ export const ShowServers = () => {
 	const { data, refetch, isPending } = api.server.all.useQuery();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
 	const { data: isCloud } = api.settings.isCloud.useQuery();
+	const { data: isRemoteMonitoringEnabled } =
+		api.settings.isRemoteMonitoringEnabled.useQuery();
 	const { data: canCreateMoreServers } =
 		api.stripe.canCreateMoreServers.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
@@ -303,7 +305,7 @@ export const ShowServers = () => {
 																					</Tooltip>
 																				)}
 
-																				{isCloud &&
+																				{isRemoteMonitoringEnabled &&
 																					server.sshKeyId &&
 																					!isBuildServer && (
 																						<Tooltip>

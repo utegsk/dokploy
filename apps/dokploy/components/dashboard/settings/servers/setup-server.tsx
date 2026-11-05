@@ -51,6 +51,8 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 
 	const [activeLog, setActiveLog] = useState<string | null>(null);
 	const { data: isCloud } = api.settings.isCloud.useQuery();
+	const { data: isRemoteMonitoringEnabled } =
+		api.settings.isRemoteMonitoringEnabled.useQuery();
 	const isBuildServer = server?.serverType === "build";
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 	const [filteredLogs, setFilteredLogs] = useState<LogLine[]>([]);
@@ -130,7 +132,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 									"grid  w-[700px]",
 									isBuildServer
 										? "grid-cols-3"
-										: isCloud
+										: isRemoteMonitoringEnabled
 											? "grid-cols-6"
 											: "grid-cols-5",
 								)}
@@ -142,7 +144,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 								{!isBuildServer && (
 									<>
 										<TabsTrigger value="audit">Security</TabsTrigger>
-										{isCloud && (
+										{isRemoteMonitoringEnabled && (
 											<TabsTrigger value="monitoring">Monitoring</TabsTrigger>
 										)}
 										<TabsTrigger value="gpu-setup">GPU Setup</TabsTrigger>

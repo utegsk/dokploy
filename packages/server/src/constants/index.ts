@@ -3,6 +3,8 @@ import path from "node:path";
 import Docker from "dockerode";
 
 export const IS_CLOUD = process.env.IS_CLOUD === "true";
+export const REMOTE_MONITORING_ENABLED =
+	IS_CLOUD || process.env.ENABLE_REMOTE_MONITORING !== "false";
 
 export const DOKPLOY_DOCKER_API_VERSION =
 	process.env.DOKPLOY_DOCKER_API_VERSION;
