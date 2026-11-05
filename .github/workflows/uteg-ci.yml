@@ -1,0 +1,56 @@
+name: uteg CI
+
+on:
+  pull_request:
+    branches: [uteg]
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        job: [build, test, typecheck]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.22.1
+          cache: pnpm
+
+      - name: Install Nixpacks and Railpack
+        if: matrix.job == 'test'
+        run: |
+          export NIXPACKS_VERSION=1.41.0 RAILPACK_VERSION=0.15.4
+          curl -sSL https://nixpacks.com/install.sh | bash
+          curl -sSL https://railpack.com/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Initialize Docker Swarm
+        if: matrix.job == 'test'
+        run: |
+          docker swarm init
+          docker network create --driver overlay dokploy-network || true
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm server:build
+      - run: pnpm ${{ matrix.job }}
+
+  monitoring:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/monitoring
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/monitoring/go.mod
+          cache-dependency-path: apps/monitoring/go.sum
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build -o /dev/null .

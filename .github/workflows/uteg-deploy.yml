@@ -1,0 +1,60 @@
+name: uteg deploy
+
+# Deploys a uteg image to the Dokploy host after the image build on `uteg`
+# succeeds, or on demand (e.g. to roll back to an older tag).
+# Secrets (in environment `uteg-infra`): DEPLOY_HOST, DEPLOY_USER,
+# DEPLOY_SSH_KEY (private key), DEPLOY_KNOWN_HOSTS (ssh-keyscan output).
+
+on:
+  workflow_run:
+    workflows: [uteg images]
+    types: [completed]
+    branches: [uteg]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag, e.g. v0.30.10-uteg.2"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uteg-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: uteg-infra
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Resolve image
+        id: image
+        run: |
+          tag="${{ inputs.tag }}"
+          if [ -z "$tag" ]; then
+            # Same tag scheme as uteg-images.yml
+            tag="$(jq -r .version apps/dokploy/package.json)-uteg.${{ github.event.workflow_run.run_number }}"
+          fi
+          echo "image=ghcr.io/utegsk/dokploy:$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_deploy
+
+      - name: Deploy
+        env:
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          IMAGE: ${{ steps.image.outputs.image }}
+        run: ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$TARGET" 'bash -s' -- "$IMAGE" < .github/uteg/deploy.sh
