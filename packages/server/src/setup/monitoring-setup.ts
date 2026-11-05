@@ -8,6 +8,10 @@ import { execAsync, execAsyncRemote } from "../utils/process/execAsync";
 import { getRemoteDocker } from "../utils/servers/remote-docker";
 
 const getMonitoringImage = () => {
+	if (process.env.MONITORING_IMAGE) {
+		return process.env.MONITORING_IMAGE;
+	}
+
 	let imageName = "dokploy/monitoring:latest";
 
 	if (

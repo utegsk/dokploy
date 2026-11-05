@@ -16,7 +16,6 @@ import {
 	getDockerDiskUsage,
 	getDokployImageTag,
 	getLogCleanupStatus,
-	getUpdateData,
 	getWebServerSettings,
 	IS_CLOUD,
 	parseRawConfig,
@@ -34,7 +33,6 @@ import {
 	reloadDockerResource,
 	sendDockerCleanupNotifications,
 	setupGPUSupport,
-	spawnAsync,
 	startLogCleanup,
 	stopLogCleanup,
 	updateLetsEncryptEmail,
@@ -543,40 +541,19 @@ export const settingsRouter = createTRPCRouter({
 			});
 			return true;
 		}),
+	// uteg fork: self-update is disabled, upgrades go through the fork's deploy pipeline.
 	getUpdateData: protectedProcedure.mutation(async () => {
-		if (IS_CLOUD) {
-			return DEFAULT_UPDATE_DATA;
-		}
-
-		return await getUpdateData(packageInfo.version);
+		return DEFAULT_UPDATE_DATA;
 	}),
-	updateServer: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
-
-		const data = await getUpdateData(packageInfo.version);
-		if (data.updateAvailable) {
-			void spawnAsync("docker", [
-				"service",
-				"update",
-				"--force",
-				"--image",
-				`dokploy/dokploy:${data.latestVersion}`,
-				"dokploy",
-			]);
-			await audit(ctx, {
-				action: "update",
-				resourceType: "settings",
-				resourceName: "dokploy-version",
-			});
-		}
-
-		return true;
+	updateServer: adminProcedure.mutation(async () => {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Self-update is disabled in this build",
+		});
 	}),
 
 	getDokployVersion: protectedProcedure.query(() => {
-		return packageInfo.version;
+		return process.env.UTEG_VERSION || packageInfo.version;
 	}),
 	getReleaseTag: protectedProcedure.query(() => {
 		return getDokployImageTag();

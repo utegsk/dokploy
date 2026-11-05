@@ -74,3 +74,8 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Ejecutar node directamente: pnpm como wrapper queda residente (~100MB RSS)
   CMD ["sh", "-c", "node -r dotenv/config dist/wait-for-postgres.mjs && node -r dotenv/config dist/migration.mjs && exec node -r dotenv/config dist/server.mjs"]
+
+# uteg fork: version shown in the UI and the matching monitoring agent image
+ARG UTEG_VERSION=""
+ARG MONITORING_IMAGE=""
+ENV UTEG_VERSION=${UTEG_VERSION} MONITORING_IMAGE=${MONITORING_IMAGE}
