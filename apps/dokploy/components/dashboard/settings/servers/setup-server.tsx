@@ -29,16 +29,15 @@ import { ShowDeployment } from "../../application/deployments/show-deployment";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 import { EditScript } from "./edit-script";
 import { GPUSupport } from "./gpu-support";
-import { SecurityAudit } from "./security-audit";
 import { SetupMonitoring } from "./setup-monitoring";
 import { ValidateServer } from "./validate-server";
 
 interface Props {
 	serverId: string;
-	asButton?: boolean;
+	children?: React.ReactNode;
 }
 
-export const SetupServer = ({ serverId, asButton = false }: Props) => {
+export const SetupServer = ({ serverId, children }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const { data: server } = api.server.one.useQuery(
 		{
@@ -83,24 +82,19 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			{asButton ? (
+			{children ? (
+				<DialogTrigger asChild>{children}</DialogTrigger>
+			) : (
 				<DialogTrigger asChild>
-					<Button variant="outline" size="icon" className="h-9 w-9">
-						<Settings className="h-4 w-4" />
+					<Button className="w-full cursor-pointer " size="sm">
+						Setup Server <Settings className="size-4" />
 					</Button>
 				</DialogTrigger>
-			) : (
-				<Button
-					className="w-full cursor-pointer "
-					size="sm"
-					onClick={() => {
-						setIsOpen(true);
-					}}
-				>
-					Setup Server <Settings className="size-4" />
-				</Button>
 			)}
-			<DialogContent className="sm:max-w-4xl  ">
+			<DialogContent
+				className="sm:max-w-4xl  "
+				onCloseAutoFocus={(e) => e.preventDefault()}
+			>
 				<DialogHeader>
 					<div className="flex flex-col gap-1.5">
 						<DialogTitle className="flex items-center gap-2">
@@ -132,9 +126,15 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 									"grid  w-[700px]",
 									isBuildServer
 										? "grid-cols-3"
+<<<<<<< HEAD
 										: isRemoteMonitoringEnabled
 											? "grid-cols-6"
 											: "grid-cols-5",
+=======
+										: isCloud
+											? "grid-cols-5"
+											: "grid-cols-4",
+>>>>>>> v0.31.0
 								)}
 							>
 								<TabsTrigger value="ssh-keys">SSH Keys</TabsTrigger>
@@ -143,8 +143,12 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 
 								{!isBuildServer && (
 									<>
+<<<<<<< HEAD
 										<TabsTrigger value="audit">Security</TabsTrigger>
 										{isRemoteMonitoringEnabled && (
+=======
+										{isCloud && (
+>>>>>>> v0.31.0
 											<TabsTrigger value="monitoring">Monitoring</TabsTrigger>
 										)}
 										<TabsTrigger value="gpu-setup">GPU Setup</TabsTrigger>
@@ -335,14 +339,6 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 							</TabsContent>
 							{!isBuildServer && (
 								<>
-									<TabsContent
-										value="audit"
-										className="outline-hidden ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-									>
-										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
-											<SecurityAudit serverId={serverId} />
-										</div>
-									</TabsContent>
 									<TabsContent
 										value="monitoring"
 										className="outline-hidden ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
