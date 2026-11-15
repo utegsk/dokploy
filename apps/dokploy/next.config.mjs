@@ -5,6 +5,10 @@
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+	experimental: {
+		// persistent dev cache writes GBs to .next/dev/cache; keep off
+		turbopackFileSystemCacheForDev: false,
+	},
 	reactStrictMode: true,
 	typescript: {
 		ignoreBuildErrors: true,
