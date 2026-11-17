@@ -10,8 +10,10 @@ import {
 	initializeNetwork,
 	initSchedules,
 	initVolumeBackupsCronJobs,
+	restoreInterruptedTraefik,
 	sendDokployRestartNotifications,
 	setupDirectories,
+	startTraefikAfterFailedBoot,
 } from "@dokploy/server";
 import { config } from "dotenv";
 import next from "next";
@@ -61,6 +63,12 @@ void app.prepare().then(async () => {
 		if (process.env.NODE_ENV === "production" && !IS_CLOUD) {
 			createDefaultMiddlewares();
 			await initializeNetwork();
+			await restoreInterruptedTraefik().catch((error) => {
+				console.error("Failed to restore Traefik:", error);
+			});
+			await startTraefikAfterFailedBoot().catch((error) => {
+				console.error("Failed to start Traefik:", error);
+			});
 			await initCronJobs();
 			await initSchedules();
 			await initCancelDeployments();
