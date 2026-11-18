@@ -6,6 +6,12 @@ export const IS_CLOUD = process.env.IS_CLOUD === "true";
 export const REMOTE_MONITORING_ENABLED =
 	IS_CLOUD || process.env.ENABLE_REMOTE_MONITORING !== "false";
 
+export const getRootAdminIds = () =>
+	(process.env.USER_ADMIN_ID ?? "")
+		.split(",")
+		.map((id) => id.trim())
+		.filter(Boolean);
+
 export const DOKPLOY_DOCKER_API_VERSION =
 	process.env.DOKPLOY_DOCKER_API_VERSION;
 export const DOKPLOY_DOCKER_HOST = process.env.DOKPLOY_DOCKER_HOST;
@@ -136,6 +142,7 @@ export const paths = (isServer = false) => {
 		CERTIFICATES_PATH: `${DYNAMIC_TRAEFIK_PATH}/certificates`,
 		MONITORING_PATH: `${BASE_PATH}/monitoring`,
 		REGISTRY_PATH: `${BASE_PATH}/registry`,
+		VECTOR_PATH: `${BASE_PATH}/vector`,
 		SCHEDULES_PATH: `${BASE_PATH}/schedules`,
 		VOLUME_BACKUPS_PATH: `${BASE_PATH}/volume-backups`,
 		VOLUME_BACKUP_LOCK_PATH: `${BASE_PATH}/volume-backup-lock`,
